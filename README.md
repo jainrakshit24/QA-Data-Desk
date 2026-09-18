@@ -45,6 +45,11 @@ git clone https://github.com/jainrakshit24/QA-Data-Desk.git qa_dashboard && cd q
 New here, or setting this up for a team? **[SETUP.md](SETUP.md)** walks through every step: what to install,
 the read-only database user to ask for, the first admin account, `.env`, the AI key, cron and Docker.
 
+Full documentation is in **[docs/](docs/README.md)**: a [user guide](docs/user-guide.md) for every page, the
+[configuration reference](docs/configuration.md), [scheduled checks](docs/scheduler.md),
+[how it works inside](docs/architecture.md), [security and privacy](docs/security.md), and
+[development](docs/development.md).
+
 Open http://localhost:8501. The first run installs the Python packages (no sudo needed) and prints a
 **setup code** in the terminal. Enter it on the sign-in page to create the admin account.
 

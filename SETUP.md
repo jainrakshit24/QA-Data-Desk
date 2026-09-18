@@ -1,7 +1,8 @@
 # Setup guide
 
 Everything needed to get QA Data Desk running — on your own laptop, or on a server for your team.
-No prior Streamlit knowledge assumed. If you only want the feature tour, read the [README](README.md) instead.
+No prior Streamlit knowledge assumed. For the feature tour read the [README](README.md); for what each page does
+read the [user guide](docs/user-guide.md); everything else is in [docs/](docs/README.md).
 
 - [1. What you need first](#1-what-you-need-first)
 - [2. Install and start](#2-install-and-start)
