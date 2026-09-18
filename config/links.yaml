@@ -1,0 +1,19 @@
+# How tables relate when the database has no real foreign keys.
+#
+# The app already follows real foreign keys, and guesses the common pattern
+# <name>_id -> <name>.id / <name>s.id / <name>es.id / <name→ies>.id on its own.
+# Add anything else below — or better, in local/links.yaml, which is not published.
+#
+# column_links:   any table's column with this name points here
+#   order_id: orders.id
+# table_links:    one specific table.column points here (wins over column_links)
+#   invoices.buyer_id: customers.id
+# aliases:        short words people type in the table search, and what they mean
+#   inv: [invoice]
+# topics:         a phrase that pins these tables to the top of the search
+#   billing: [invoices, payments]
+
+column_links: {}
+table_links: {}
+aliases: {}
+topics: {}

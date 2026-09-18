@@ -1,0 +1,29 @@
+{title}
+======================================================================
+Environment:          {environment}
+Record / identifier:  {identifier}
+Generated:            {generated_at}
+
+SUMMARY
+{summary}
+
+STEPS TO REPRODUCE
+{steps}
+
+EXPECTED RESULT
+{expected}
+
+ACTUAL RESULT
+{actual}
+
+DATABASE EVIDENCE
+{db_evidence}
+
+API EVIDENCE
+{api_evidence}
+
+MISMATCH DETAILS
+{mismatches}
+
+SQL USED (READ-ONLY)
+{sql}

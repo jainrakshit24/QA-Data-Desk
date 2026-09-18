@@ -1,0 +1,21 @@
+[server]
+headless = true
+fileWatcherType = "none"    # no code reloading while serving; restart after editing
+port = 8501
+address = "127.0.0.1"   # run.sh and Docker override this
+
+[browser]
+gatherUsageStats = false
+
+[client]
+toolbarMode = "viewer"      # hides Streamlit's Deploy button and developer menu
+
+[runner]
+fastReruns = true
+
+[theme]
+primaryColor = "#33478F"
+backgroundColor = "#F7F8FB"
+secondaryBackgroundColor = "#ECEFF5"
+textColor = "#141A24"
+font = "sans serif"

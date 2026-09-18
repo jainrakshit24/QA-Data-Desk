@@ -1,0 +1,3 @@
+-r requirements.txt
+pytest>=8
+pytest-randomly>=3.15

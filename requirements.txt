@@ -1,0 +1,6 @@
+streamlit>=1.50,<2
+pandas>=1.5
+plotly>=5.20
+PyMySQL>=1.1
+PyYAML>=5.4
+openpyxl>=3.1

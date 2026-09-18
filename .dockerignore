@@ -1,0 +1,13 @@
+.db.json
+.ai.json
+local/
+cache/
+*.sqlite3
+__pycache__/
+.git/
+.project_memory/
+.setup_code
+.snapshot_key
+.env
+logs/
+.pytest_cache/

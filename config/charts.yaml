@@ -1,0 +1,15 @@
+# Ready-made charts that work on any MySQL database.
+#   kind: Bar | Line | Pie | Scatter      x / y: column names in the result      color: optional split column
+#   database: (optional) only show when the active connection uses this database name
+# Put charts for your own databases in local/charts.yaml — not published.
+
+- id: largest_tables
+  title: Largest tables
+  kind: Bar
+  x: table_name
+  y: approx_rows
+  note: Row estimates from MySQL for the 25 biggest tables.
+  sql: |
+    SELECT TABLE_NAME AS table_name, TABLE_ROWS AS approx_rows
+    FROM information_schema.tables WHERE table_schema = DATABASE()
+    ORDER BY TABLE_ROWS DESC LIMIT 25

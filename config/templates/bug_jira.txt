@@ -1,0 +1,29 @@
+h2. {title}
+
+*Environment:* {environment}
+*Record / identifier:* {identifier}
+*Generated:* {generated_at}
+
+h3. Summary
+{summary}
+
+h3. Steps to reproduce
+{steps}
+
+h3. Expected result
+{expected}
+
+h3. Actual result
+{actual}
+
+h3. Database evidence
+{db_evidence}
+
+h3. API evidence
+{api_evidence}
+
+h3. Mismatch details
+{mismatches}
+
+h3. SQL used (read-only)
+{sql}

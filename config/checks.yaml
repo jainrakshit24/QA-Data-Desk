@@ -1,0 +1,58 @@
+# Saved checks that work on any MySQL database.
+#
+#   expect: empty  -> any row returned means something needs attention
+#   expect: info   -> information only
+#   database: (optional) only show when the active connection uses this database name
+#   schedule: (optional) hourly | daily | weekly | monthly | manual (default) — used by scheduler.py, not the UI
+#
+# Put checks for your own databases in local/checks.yaml — that folder is not published.
+
+- id: any_largest_tables
+  area: Database overview
+  title: Largest tables
+  why: Row estimates from MySQL — a quick map of where the data lives.
+  expect: info
+  sql: |
+    SELECT TABLE_NAME AS table_name, TABLE_ROWS AS approx_rows,
+           ROUND((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024) AS size_mb, UPDATE_TIME AS last_update
+    FROM information_schema.tables
+    WHERE table_schema = DATABASE()
+    ORDER BY TABLE_ROWS DESC
+    LIMIT 50
+
+- id: any_recently_changed_tables
+  area: Database overview
+  title: Tables changed recently
+  why: Which tables had writes most recently — useful after a deploy or a test run.
+  expect: info
+  sql: |
+    SELECT TABLE_NAME AS table_name, UPDATE_TIME AS last_update, TABLE_ROWS AS approx_rows
+    FROM information_schema.tables
+    WHERE table_schema = DATABASE() AND UPDATE_TIME IS NOT NULL
+    ORDER BY UPDATE_TIME DESC
+    LIMIT 50
+
+- id: any_empty_tables
+  area: Database overview
+  title: Empty tables
+  why: Tables with no rows — features backed by these cannot be tested with real data.
+  expect: info
+  sql: |
+    SELECT TABLE_NAME AS table_name, CREATE_TIME AS created
+    FROM information_schema.tables
+    WHERE table_schema = DATABASE() AND TABLE_TYPE = 'BASE TABLE' AND TABLE_ROWS = 0
+    ORDER BY TABLE_NAME
+
+- id: any_tables_without_primary_key
+  area: Database overview
+  title: Tables without a primary key
+  why: Rows in these tables cannot be addressed uniquely — duplicates are easy to create.
+  expect: info
+  sql: |
+    SELECT t.TABLE_NAME AS table_name, t.TABLE_ROWS AS approx_rows
+    FROM information_schema.tables t
+    LEFT JOIN information_schema.table_constraints c
+      ON c.table_schema = t.table_schema AND c.table_name = t.table_name
+     AND c.constraint_type = 'PRIMARY KEY'
+    WHERE t.table_schema = DATABASE() AND t.TABLE_TYPE = 'BASE TABLE' AND c.constraint_name IS NULL
+    ORDER BY t.TABLE_ROWS DESC

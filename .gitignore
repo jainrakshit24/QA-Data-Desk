@@ -1,0 +1,21 @@
+# Secrets — never publish
+.db.json
+.ai.json
+.env
+
+# Your own checks, charts, links and AI notes
+local/
+
+# App data and caches
+app_data.sqlite3
+*.sqlite3
+cache/
+__pycache__/
+*.pyc
+.pytest_cache/
+.setup_code
+
+# Project handoff notes and staging-specific e2e scripts (internal)
+.project_memory/
+.snapshot_key
+logs/

@@ -1,0 +1,107 @@
+# Generic playbook templates — work on any MySQL database.
+#   :name      a value, bound safely
+#   {{name}}   a table or column name, checked against the schema before use
+# Duplicate a template in the app to adapt it, or add your own in local/playbooks.yaml (not published).
+
+- id: tpl_duplicates
+  name: Duplicate values in a column
+  objective: Find values that appear more than once where they should be unique, and see the rows involved.
+  parameters:
+    - {name: table, label: Table, type: table}
+    - {name: column, label: Column that should be unique, type: column, table_param: table}
+  steps:
+    - title: How many values are duplicated
+      purpose: Counts distinct values that occur more than once.
+      look_for: Anything above 0 is a duplicate.
+      sql: |
+        SELECT COUNT(*) AS duplicated_values, COALESCE(SUM(copies), 0) AS rows_involved
+        FROM (SELECT {{column}}, COUNT(*) AS copies FROM {{table}}
+              WHERE {{column}} IS NOT NULL GROUP BY {{column}} HAVING COUNT(*) > 1) AS d
+    - title: Most repeated values
+      purpose: Lists the values with the most copies.
+      look_for: Pick one value to inspect in the next step.
+      sql: |
+        SELECT {{column}} AS value, COUNT(*) AS copies
+        FROM {{table}} WHERE {{column}} IS NOT NULL
+        GROUP BY {{column}} HAVING COUNT(*) > 1
+        ORDER BY copies DESC LIMIT 50
+
+- id: tpl_orphans
+  name: Rows whose parent is missing
+  objective: Find child rows that point to a parent row that does not exist.
+  parameters:
+    - {name: child_table, label: Child table, type: table}
+    - {name: child_column, label: Child column that points to the parent, type: column, table_param: child_table}
+    - {name: parent_table, label: Parent table, type: table}
+    - {name: parent_column, label: Parent column it points to, type: column, table_param: parent_table}
+  steps:
+    - title: Count orphans
+      purpose: Child rows with a value that has no matching parent.
+      look_for: 0 means every child has its parent.
+      sql: |
+        SELECT COUNT(*) AS orphan_rows
+        FROM {{child_table}} AS c
+        WHERE c.{{child_column}} IS NOT NULL
+          AND NOT EXISTS (SELECT 1 FROM {{parent_table}} AS p WHERE p.{{parent_column}} = c.{{child_column}})
+    - title: Orphan values
+      purpose: The missing parent values, most referenced first.
+      look_for: A few values with many rows usually means a deleted parent.
+      sql: |
+        SELECT c.{{child_column}} AS missing_parent_value, COUNT(*) AS child_rows
+        FROM {{child_table}} AS c
+        WHERE c.{{child_column}} IS NOT NULL
+          AND NOT EXISTS (SELECT 1 FROM {{parent_table}} AS p WHERE p.{{parent_column}} = c.{{child_column}})
+        GROUP BY c.{{child_column}} ORDER BY child_rows DESC LIMIT 100
+
+- id: tpl_missing_values
+  name: Missing required values
+  objective: Measure how often a column that should always be filled is NULL or empty.
+  parameters:
+    - {name: table, label: Table, type: table}
+    - {name: column, label: Column that should be filled, type: column, table_param: table}
+  steps:
+    - title: How many rows are missing the value
+      purpose: Counts NULL and empty values against the total.
+      look_for: missing_rows should be 0.
+      sql: |
+        SELECT COUNT(*) AS total_rows,
+               SUM({{column}} IS NULL OR TRIM(CAST({{column}} AS CHAR)) = '') AS missing_rows
+        FROM {{table}}
+
+- id: tpl_status_breakdown
+  name: Status breakdown
+  objective: See every value a status-like column takes, to spot unexpected or legacy states.
+  parameters:
+    - {name: table, label: Table, type: table}
+    - {name: column, label: Status column, type: column, table_param: table}
+  steps:
+    - title: Rows per value
+      purpose: Lists each distinct value with its count.
+      look_for: Values nobody expects, or NULLs.
+      sql: |
+        SELECT {{column}} AS value, COUNT(*) AS row_count
+        FROM {{table}} GROUP BY {{column}} ORDER BY row_count DESC LIMIT 100
+
+- id: tpl_record_by_value
+  name: One record and its recent neighbours
+  objective: Look at a record by any column value, and at the rows created just before and after it.
+  parameters:
+    - {name: table, label: Table, type: table}
+    - {name: column, label: Column to match, type: column, table_param: table}
+    - {name: value, label: Value, type: value}
+    - {name: order_column, label: Column that orders rows (id or created time), type: column, table_param: table}
+  steps:
+    - title: The record
+      purpose: Rows where the column equals the value.
+      look_for: Exactly one row for a unique identifier.
+      sql: |
+        SELECT * FROM {{table}} WHERE {{column}} = :value LIMIT 20
+    - title: Rows just before and after
+      purpose: Neighbouring rows by the ordering column — useful to see whether a batch or a single write went wrong.
+      look_for: Differences in status or missing fields compared with neighbours.
+      sql: |
+        (SELECT * FROM {{table}} WHERE {{order_column}} < (SELECT MIN({{order_column}}) FROM {{table}} WHERE {{column}} = :value)
+         ORDER BY {{order_column}} DESC LIMIT 5)
+        UNION ALL
+        (SELECT * FROM {{table}} WHERE {{order_column}} > (SELECT MAX({{order_column}}) FROM {{table}} WHERE {{column}} = :value)
+         ORDER BY {{order_column}} ASC LIMIT 5)
