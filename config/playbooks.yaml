@@ -1,3 +1,5 @@
+# QA Data Desk — https://github.com/jainrakshit24/QA-Data-Desk
+# Copyright (c) 2026 Rakshit Jain. Licensed under the MIT License.
 # Generic playbook templates — work on any MySQL database.
 #   :name      a value, bound safely
 #   {{name}}   a table or column name, checked against the schema before use

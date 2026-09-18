@@ -1,3 +1,7 @@
+# QA Data Desk — https://github.com/jainrakshit24/QA-Data-Desk
+# Copyright (c) 2026 Rakshit Jain. Licensed under the MIT License.
+# Author: Rakshit Jain <itsrakshitjain@gmail.com>
+
 """App-side storage for Phase 2 features, in the same SQLite file as accounts.
 
 Only metadata is stored — check result counts, rule and playbook definitions, schema structure.

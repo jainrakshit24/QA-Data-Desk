@@ -1,3 +1,7 @@
+# QA Data Desk — https://github.com/jainrakshit24/QA-Data-Desk
+# Copyright (c) 2026 Rakshit Jain. Licensed under the MIT License.
+# Author: Rakshit Jain <itsrakshitjain@gmail.com>
+
 """Click-built filters turned into a parameterised WHERE clause. Values are always bound, never pasted."""
 import re
 

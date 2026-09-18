@@ -1,3 +1,7 @@
+# QA Data Desk — https://github.com/jainrakshit24/QA-Data-Desk
+# Copyright (c) 2026 Rakshit Jain. Licensed under the MIT License.
+# Author: Rakshit Jain <itsrakshitjain@gmail.com>
+
 """QA Data Desk — read-only database explorer with sign-in.
 
 Run:  ./run.sh     (or: python3 -m streamlit run app.py)

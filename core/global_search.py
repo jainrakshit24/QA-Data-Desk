@@ -1,3 +1,7 @@
+# QA Data Desk — https://github.com/jainrakshit24/QA-Data-Desk
+# Copyright (c) 2026 Rakshit Jain. Licensed under the MIT License.
+# Author: Rakshit Jain <itsrakshitjain@gmail.com>
+
 """One search box over everything the app knows about: tables, columns, saved queries, checks, playbooks,
 consistency rules and query history. Works from cached metadata — no database queries."""
 import re

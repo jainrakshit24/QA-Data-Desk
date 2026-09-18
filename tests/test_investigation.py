@@ -1,3 +1,7 @@
+# QA Data Desk — https://github.com/jainrakshit24/QA-Data-Desk
+# Copyright (c) 2026 Rakshit Jain. Licensed under the MIT License.
+# Author: Rakshit Jain <itsrakshitjain@gmail.com>
+
 """Phase 1 investigation logic: parameters, search, records, timeline, API validation, evidence, AI privacy."""
 import datetime as dt
 import json

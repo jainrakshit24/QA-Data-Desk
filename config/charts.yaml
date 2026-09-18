@@ -1,3 +1,5 @@
+# QA Data Desk — https://github.com/jainrakshit24/QA-Data-Desk
+# Copyright (c) 2026 Rakshit Jain. Licensed under the MIT License.
 # Ready-made charts that work on any MySQL database.
 #   kind: Bar | Line | Pie | Scatter      x / y: column names in the result      color: optional split column
 #   database: (optional) only show when the active connection uses this database name

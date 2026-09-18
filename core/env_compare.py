@@ -1,3 +1,7 @@
+# QA Data Desk — https://github.com/jainrakshit24/QA-Data-Desk
+# Copyright (c) 2026 Rakshit Jain. Licensed under the MIT License.
+# Author: Rakshit Jain <itsrakshitjain@gmail.com>
+
 """Compare two databases (environments): one record, one query's result, or table row counts.
 
 Structure differences live on the Schema compare page — this compares data, always masked, and never writes.

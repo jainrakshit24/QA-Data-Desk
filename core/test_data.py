@@ -1,3 +1,7 @@
+# QA Data Desk — https://github.com/jainrakshit24/QA-Data-Desk
+# Copyright (c) 2026 Rakshit Jain. Licensed under the MIT License.
+# Author: Rakshit Jain <itsrakshitjain@gmail.com>
+
 """Test data suggestions. This module only builds text — it never connects to a database.
 
 Generated INSERT statements are clearly labelled NOT EXECUTED; QA Data Desk cannot run them (the read-only guard

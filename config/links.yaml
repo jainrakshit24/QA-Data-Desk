@@ -1,3 +1,5 @@
+# QA Data Desk — https://github.com/jainrakshit24/QA-Data-Desk
+# Copyright (c) 2026 Rakshit Jain. Licensed under the MIT License.
 # How tables relate when the database has no real foreign keys.
 #
 # The app already follows real foreign keys, and guesses the common pattern

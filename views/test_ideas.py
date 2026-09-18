@@ -1,3 +1,7 @@
+# QA Data Desk — https://github.com/jainrakshit24/QA-Data-Desk
+# Copyright (c) 2026 Rakshit Jain. Licensed under the MIT License.
+# Author: Rakshit Jain <itsrakshitjain@gmail.com>
+
 """Test ideas: edge cases for a table, and test data suggestions. Nothing here writes to the database."""
 import pandas as pd
 import streamlit as st

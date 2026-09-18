@@ -1,3 +1,7 @@
+# QA Data Desk — https://github.com/jainrakshit24/QA-Data-Desk
+# Copyright (c) 2026 Rakshit Jain. Licensed under the MIT License.
+# Author: Rakshit Jain <itsrakshitjain@gmail.com>
+
 """Edge case ideas for a table, worked out from column types, names, keys and links.
 
 Suggestions only: nothing here writes to the database. The optional coverage query only counts things

@@ -38,7 +38,7 @@ Bug or identifier ─► Start investigation ─► Investigate record ─► Va
 ## Quick start
 
 ```bash
-git clone <this repo> qa_dashboard && cd qa_dashboard
+git clone https://github.com/jainrakshit24/QA-Data-Desk.git qa_dashboard && cd qa_dashboard
 ./run.sh
 ```
 
@@ -262,3 +262,7 @@ tests/              pytest suite
 | Changed code, nothing happened | The server does not reload code while running. Stop it and start `./run.sh` again. |
 | "Gemini rejected the API key" / "model not found" | Update the key or model name on Admin → AI. |
 | Locked out as the only admin | Stop the app and run `python3 -c "import auth; auth.set_status(1, 'active')"`, or delete `app_data.sqlite3` to start over (this removes all accounts and saved queries). |
+
+---
+
+© 2026 **Rakshit Jain** · Built by Rakshit Jain ([@jainrakshit24](https://github.com/jainrakshit24)) · MIT licensed — see [LICENSE](LICENSE).

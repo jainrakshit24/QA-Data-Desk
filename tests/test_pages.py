@@ -1,3 +1,7 @@
+# QA Data Desk — https://github.com/jainrakshit24/QA-Data-Desk
+# Copyright (c) 2026 Rakshit Jain. Licensed under the MIT License.
+# Author: Rakshit Jain <itsrakshitjain@gmail.com>
+
 """End-to-end page tests with Streamlit's AppTest (no browser needed).
 
 The sign-in flow runs anywhere. Pages that read a database run only when one is configured.

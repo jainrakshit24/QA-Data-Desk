@@ -1,3 +1,7 @@
+# QA Data Desk — https://github.com/jainrakshit24/QA-Data-Desk
+# Copyright (c) 2026 Rakshit Jain. Licensed under the MIT License.
+# Author: Rakshit Jain <itsrakshitjain@gmail.com>
+
 """Keeps secrets and personal data out of what the dashboard shows.
 
 - Secret columns (passwords, tokens, OTPs, API keys) are never shown to anyone,

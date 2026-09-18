@@ -1,3 +1,7 @@
+# QA Data Desk — https://github.com/jainrakshit24/QA-Data-Desk
+# Copyright (c) 2026 Rakshit Jain. Licensed under the MIT License.
+# Author: Rakshit Jain <itsrakshitjain@gmail.com>
+
 """Database health from the cached structure only — no data is read, so it is instant on any size of database.
 
 Findings are hints for QA and developers, not errors: some tables legitimately have no primary key.

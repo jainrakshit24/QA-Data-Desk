@@ -1,3 +1,5 @@
+# QA Data Desk — https://github.com/jainrakshit24/QA-Data-Desk
+# Copyright (c) 2026 Rakshit Jain. Licensed under the MIT License.
 FROM python:3.12-slim
 WORKDIR /app
 COPY requirements.txt .

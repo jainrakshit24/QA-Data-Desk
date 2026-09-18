@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# QA Data Desk — https://github.com/jainrakshit24/QA-Data-Desk
+# Copyright (c) 2026 Rakshit Jain. Licensed under the MIT License.
+# Author: Rakshit Jain <itsrakshitjain@gmail.com>
+
 # Start QA Data Desk on http://localhost:8501
 # First run installs the Python packages it needs (no sudo required).
 set -euo pipefail

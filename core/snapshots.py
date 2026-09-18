@@ -1,3 +1,7 @@
+# QA Data Desk — https://github.com/jainrakshit24/QA-Data-Desk
+# Copyright (c) 2026 Rakshit Jain. Licensed under the MIT License.
+# Author: Rakshit Jain <itsrakshitjain@gmail.com>
+
 """Manual record snapshots: what one record looked like when a QA pressed "Save snapshot".
 
 These are NOT database history — only the moments someone captured. Values are stored masked (secret columns hidden,

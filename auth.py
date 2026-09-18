@@ -1,3 +1,7 @@
+# QA Data Desk — https://github.com/jainrakshit24/QA-Data-Desk
+# Copyright (c) 2026 Rakshit Jain. Licensed under the MIT License.
+# Author: Rakshit Jain <itsrakshitjain@gmail.com>
+
 """Accounts, sign-in and the app's own small database (SQLite).
 
 Passwords are stored as salted scrypt hashes. New sign-ups wait for an admin to

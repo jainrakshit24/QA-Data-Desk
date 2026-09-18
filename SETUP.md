@@ -49,7 +49,7 @@ FLUSH PRIVILEGES;
 ## 2. Install and start
 
 ```bash
-git clone https://github.com/<your-account>/<your-repo>.git qa_dashboard
+git clone https://github.com/jainrakshit24/QA-Data-Desk.git qa_dashboard
 cd qa_dashboard
 ./run.sh
 ```
@@ -299,3 +299,7 @@ python3 -m pytest -q            # database-backed tests skip themselves if no co
 
 Still stuck? Open an issue with what you did, what you expected, and the message you saw. Never paste real
 credentials or database rows into an issue.
+
+---
+
+© 2026 Rakshit Jain · Built by Rakshit Jain (@jainrakshit24) · MIT licensed.

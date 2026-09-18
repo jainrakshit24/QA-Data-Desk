@@ -1,3 +1,7 @@
+# QA Data Desk — https://github.com/jainrakshit24/QA-Data-Desk
+# Copyright (c) 2026 Rakshit Jain. Licensed under the MIT License.
+# Author: Rakshit Jain <itsrakshitjain@gmail.com>
+
 """Phase 3–5 features: query library and history, secret-column settings, friendly errors, search, edge cases,
 test data, schema explorer, database health, record snapshots, environment compare, scheduled checks."""
 import json

@@ -1,3 +1,7 @@
+# QA Data Desk — https://github.com/jainrakshit24/QA-Data-Desk
+# Copyright (c) 2026 Rakshit Jain. Licensed under the MIT License.
+# Author: Rakshit Jain <itsrakshitjain@gmail.com>
+
 """Data consistency rules: “every <source row matching X> must (not) have a <target row> with the same key”.
 
 Only generates read-only SQL. Counting and sampling run through the normal query layer.
