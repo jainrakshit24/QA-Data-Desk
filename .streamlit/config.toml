@@ -1,5 +1,7 @@
 [server]
 headless = true
+enableXsrfProtection = true   # cross-site request forgery token on every action
+enableCORS = false            # only this origin may talk to the server
 fileWatcherType = "none"    # no code reloading while serving; restart after editing
 port = 8501
 address = "127.0.0.1"   # run.sh and Docker override this

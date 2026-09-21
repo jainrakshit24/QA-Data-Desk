@@ -402,3 +402,58 @@ def lazy_tabs(labels, key):
 
 def indexed_label(col, key):
     return f"{col} 🔑" if key in ("PRI", "UNI", "MUL") else col
+
+
+# ------------------------------------------------------------------ notices (cookies, insecure connection)
+def _header(name, default=""):
+    """One request header, or default. Streamlit exposes them read-only; missing behind some proxies."""
+    try:
+        return st.context.headers.get(name, default) or default
+    except Exception:
+        return default
+
+
+def is_secure_connection():
+    """True when the browser reached us over HTTPS, or over a loopback address where plain HTTP is fine."""
+    proto = _header("X-Forwarded-Proto").split(",")[0].strip().lower()
+    host = _header("Host", "").split(":")[0].lower()
+    if proto:
+        return proto == "https"
+    return host in ("localhost", "127.0.0.1", "::1", "")
+
+
+def insecure_warning():
+    """Warn when the app is reachable over plain HTTP from another machine — passwords would cross the network."""
+    if is_secure_connection() or st.session_state.get("_hid_insecure"):
+        return
+    box = st.container(border=True)
+    box.warning("**This page was served over plain HTTP.** Passwords and query results are crossing the network "
+                "unencrypted. Put the app behind HTTPS before using it from another machine — see "
+                "`deploy/` in the project for a ready Caddy or nginx configuration.")
+    if box.button("I understand, hide this", key="hide_insecure"):
+        st.session_state["_hid_insecure"] = True
+        st.rerun()
+
+
+def cookie_notice():
+    """A one-time notice about the strictly necessary cookies. Remembered per user, or per session if signed out."""
+    from core import legal
+    who = (user() or {}).get("id")
+    if who:
+        import store
+        if store.get_setting(f"cookies.ack.{who}"):
+            return
+    elif st.session_state.get("_cookie_ack"):
+        return
+    box = st.container(border=True)
+    box.markdown("🍪 **Cookies** — " + legal.cookie_notice())
+    a, b, _ = box.columns([1.1, 1.4, 4])
+    if a.button("Got it", type="primary", key="cookie_ack"):
+        st.session_state["_cookie_ack"] = True
+        if who:
+            import datetime as _dt
+            import store
+            store.set_setting(f"cookies.ack.{who}", _dt.datetime.utcnow().isoformat(timespec="seconds"))
+        st.rerun()
+    if b.button("Read the privacy policy", key="cookie_privacy"):
+        go("privacy")

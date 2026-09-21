@@ -313,3 +313,27 @@ def test_databases_page_without_a_connection_offers_to_add_one(app_db, monkeypat
     assert not fail_messages(at)
     assert any("No database is connected yet" in i.value for i in at.info)
     assert any(b.label == "Test and save" for b in at.button)
+
+
+# ------------------------------------------------------------------ secrets must never reach the browser
+def test_no_secret_reaches_the_rendered_page(app_db, monkeypatch):
+    """Passwords, API keys and the setup code are server-side only — nothing renders them."""
+    import ai
+    monkeypatch.setattr(db, "load_connections", lambda: [
+        {"name": "Staging", "host": "db.example.com", "port": 3306, "user": "qa",
+         "password": "super-secret-db-password", "database": "shop"}])
+    monkeypatch.setattr(ai, "settings", lambda: {"api_key": "AIzaSy-super-secret-key", "model": "gemini-flash-lite-latest"})
+    rendered = []
+    user = signed_in()
+    for view in ("databases", "admin", "account", "login"):
+        at = AppTest.from_file(page_script(app_db, view), default_timeout=30)
+        if view != "login":
+            at.session_state["user"] = user
+        at.run()
+        assert not fail_messages(at)
+        rendered.append(repr(at.get("markdown")) + repr(at.get("caption")) + repr(at.get("dataframe")) +
+                        repr(at.get("text_input")) + repr(at.get("code")) + repr(at.get("json")))
+    page = "\n".join(rendered)
+    assert "super-secret-db-password" not in page
+    assert "AIzaSy-super-secret-key" not in page
+    assert auth.setup_code() not in page

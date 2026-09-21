@@ -1,0 +1,6 @@
+# QA Data Desk — an internal, sign-in-only tool. Nothing here should be indexed.
+User-agent: *
+Disallow: /
+
+# Run `python3 deploy/make_sitemap.py https://your-domain` to fill in the line below.
+# Sitemap: https://your-domain/sitemap.xml

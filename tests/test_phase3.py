@@ -752,3 +752,74 @@ def test_connection_ports_are_always_integers(tmp_path, monkeypatch):
     ports = [c["port"] for c in db.load_connections()]
     assert ports == [3306, 3307] and all(isinstance(p, int) for p in ports)
     assert pd.DataFrame([{"port": p} for p in ports])["port"].dtype.kind == "i"
+
+
+# ------------------------------------------------------------------ legal pages, cookies, HTTPS, sitemap
+def test_legal_documents_fill_in_the_operator_details(monkeypatch, tmp_path):
+    from core import legal
+    monkeypatch.setenv("QA_ORG_NAME", "Example Ltd")
+    monkeypatch.setenv("QA_CONTACT_EMAIL", "privacy@example.com")
+    monkeypatch.setenv("QA_LEGAL_UPDATED", "1 March 2026")
+    for name in ("privacy", "terms"):
+        text = legal.document(name)
+        assert "Example Ltd" in text and "privacy@example.com" in text and "1 March 2026" in text
+        assert "{org}" not in text and "{contact}" not in text and "{updated}" not in text
+    assert "strictly necessary" in legal.cookie_notice().lower()
+    with pytest.raises(KeyError):
+        legal.document("something-else")
+
+
+def test_an_installation_can_replace_the_legal_text(monkeypatch, tmp_path):
+    import packs
+    from core import legal
+    monkeypatch.setattr(packs, "LOCAL_DIR", str(tmp_path))
+    assert not legal.is_customised("privacy")
+    (tmp_path / "legal").mkdir()
+    (tmp_path / "legal" / "privacy.md").write_text("# Our own policy\n\nAsk {contact}.\n")
+    monkeypatch.setenv("QA_CONTACT_EMAIL", "dpo@example.com")
+    assert legal.is_customised("privacy")
+    assert legal.document("privacy") == "# Our own policy\n\nAsk dpo@example.com.\n"
+
+
+@pytest.mark.parametrize("headers, secure", [
+    ({"X-Forwarded-Proto": "https", "Host": "qa.example.com"}, True),
+    ({"X-Forwarded-Proto": "http", "Host": "qa.example.com"}, False),
+    ({"X-Forwarded-Proto": "https,http", "Host": "qa.example.com"}, True),
+    ({"Host": "localhost:8501"}, True),                      # developing locally is fine
+    ({"Host": "127.0.0.1:8501"}, True),
+    ({"Host": "qa.example.com"}, False),                     # remote host, no proxy header
+])
+def test_insecure_connection_is_detected(monkeypatch, headers, secure):
+    import ui
+    monkeypatch.setattr(ui, "_header", lambda name, default="": headers.get(name, default))
+    assert ui.is_secure_connection() is secure
+
+
+def test_sitemap_and_robots_are_generated_for_one_installation():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "make_sitemap", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                     "deploy", "make_sitemap.py"))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    xml = mod.sitemap("https://qa.example.com/", today="2026-03-01")
+    assert xml.startswith('<?xml version="1.0" encoding="UTF-8"?>')
+    assert "<loc>https://qa.example.com/sign-in</loc>" in xml and "https://qa.example.com//" not in xml
+    assert xml.count("<url>") == 3 and "/admin" not in xml and "/sql" not in xml     # sign-in + the two legal pages
+    robots = mod.robots("https://qa.example.com")
+    assert "Disallow: /" in robots and "Sitemap: https://qa.example.com/sitemap.xml" in robots
+    assert mod.main(["make_sitemap.py"]) == 2 and mod.main(["x", "http://insecure.example"]) == 2
+
+
+def test_shipped_robots_file_blocks_everything():
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    robots = open(os.path.join(root, "static", "robots.txt")).read()
+    assert "User-agent: *" in robots and "Disallow: /" in robots
+
+
+def test_custom_404_page_is_self_contained():
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    html = open(os.path.join(root, "deploy", "404.html")).read()
+    assert "noindex" in html and "404" in html
+    assert 'href="/"' in html                                  # one clear way back
+    assert "http://" not in html and "<script" not in html     # no external asset, no script

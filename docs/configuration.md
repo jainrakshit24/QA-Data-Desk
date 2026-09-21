@@ -30,6 +30,7 @@ Real environment variables always win over the file, so a container's settings a
 | `GEMINI_API_KEY` `GEMINI_MODEL` | AI helper. Model defaults to `gemini-flash-lite-latest`. |
 | `QA_ALERT_WEBHOOK` | Where `scheduler.py --notify webhook` posts |
 | `QA_ENV_FILE` | Load a different env file |
+| `QA_ORG_NAME` `QA_CONTACT_EMAIL` `QA_APP_URL` `QA_APP_NAME` `QA_LEGAL_UPDATED` | Who operates this installation — used by the Privacy policy, the Terms of use and the sitemap generator |
 
 Connections added in the app go to `.db.json` instead (mode 600, git-ignored). Both can coexist; the environment
 one is marked *environment* on the Databases page and is not editable there.
@@ -202,6 +203,13 @@ Operators: `equals`, `not equals`, `exists`, `missing`, `not null`, `contains`, 
 wording your team uses. Placeholders use single braces and are filled from the Bug evidence form plus the evidence you collected:
 `{title}`, `{environment}`, `{identifier}`, `{summary}`, `{steps}`, `{expected}`, `{actual}`, `{generated_at}`,
 `{sql}`, `{mismatches}`, `{api_evidence}`, `{db_evidence}`. Evidence is always masked, for everyone.
+
+## `legal/privacy.md` and `legal/terms.md`
+
+The shipped documents live in `config/legal/`. They use `{org}`, `{app}`, `{contact}`, `{url}` and `{updated}`
+placeholders, filled from the environment variables above, so most installations only need `.env`. To write your
+own wording, put `privacy.md` or `terms.md` in `local/legal/` — the app then shows yours instead and stops
+mentioning that it is the shipped text.
 
 ---
 

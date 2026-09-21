@@ -118,6 +118,28 @@ git ls-files | grep -E "\.env$|\.db\.json$|\.ai\.json$|^local/|^cache/|sqlite3" 
 
 ---
 
+## Serving it safely on a network
+
+Streamlit speaks plain HTTP, so TLS belongs to a reverse proxy. `deploy/Caddyfile` and `deploy/nginx.conf` ship
+ready to use: HTTP is redirected to HTTPS, HSTS is sent for a year, and `X-Content-Type-Options`,
+`X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy` and `X-Robots-Tag: noindex` are set on every response.
+`X-Forwarded-Proto` is passed through, and the app shows a warning to anyone who still reaches it over plain HTTP
+from another machine. XSRF protection is on and CORS is off in `.streamlit/config.toml`.
+
+`static/robots.txt` disallows every crawler, and `deploy/make_sitemap.py` writes a sitemap that lists only the
+sign-in page and the two legal documents. Unknown addresses get `deploy/404.html` — a self-contained page with no
+script and no external asset.
+
+### Secrets never reach the browser
+
+Streamlit renders on the server, so there is no bundle to leak a key into, but the app is careful anyway:
+database passwords are write-only in the form (blank means "keep the saved one") and are never sent to the page;
+the Gemini key shows as On/Off and the model name, never the key; the first-run setup code is printed to the
+terminal, never rendered. `tests/test_pages.py::test_no_secret_reaches_the_rendered_page` renders the pages with a
+fake password and key and asserts neither appears anywhere in the output.
+
+---
+
 ## Reporting a problem
 
 If you find a way to write to a database, read a secret column, or get data into an AI prompt, please open an issue

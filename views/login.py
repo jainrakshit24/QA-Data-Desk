@@ -14,7 +14,8 @@ def render():
     _, mid, _ = st.columns([1, 1.4, 1])
     with mid:
         st.title(APP_NAME)
-        st.caption("Find, filter and chart database records without writing SQL. Read-only.")
+        st.subheader("Find the record behind a bug, prove what is wrong, and write it up — without SQL.")
+        st.caption("Read-only by design: this tool can never change data in a connected database.")
         if st.session_state.get("signup_message"):
             st.success(st.session_state.pop("signup_message"))
         first_run = auth.user_count() == 0
@@ -23,6 +24,7 @@ def render():
                     "You need the setup code printed in the terminal where the app was started.")
             _sign_up(first_run=True)
             return
+        st.markdown("")
         tab_in, tab_up = st.tabs(["Sign in", "Create account"])
         with tab_in:
             with st.form("login"):
@@ -37,6 +39,18 @@ def render():
                     st.error(msg)
         with tab_up:
             _sign_up(first_run=False)
+        _footer()
+
+
+def _footer():
+    import ui
+    st.divider()
+    st.caption("New here? Create an account on the second tab — an admin approves it before you can sign in.")
+    a, b, _ = st.columns([1.2, 1.2, 3])
+    if a.button("Privacy policy", key="login_privacy", type="tertiary"):
+        ui.go("privacy")
+    if b.button("Terms of use", key="login_terms", type="tertiary"):
+        ui.go("terms")
 
 
 def _sign_up(first_run):

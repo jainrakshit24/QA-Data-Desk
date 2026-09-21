@@ -236,7 +236,17 @@ docker run -p 8501:8501 -v qa-data:/data \
   -e QA_SETUP_CODE=choose-a-long-code qa-data-desk
 ```
 
-- Put it behind HTTPS (a reverse proxy such as Caddy or nginx). Streamlit alone serves plain HTTP.
+- **Put it behind HTTPS.** Streamlit only speaks plain HTTP, so a reverse proxy terminates TLS. Ready-made
+  configurations ship in `deploy/`: [`deploy/Caddyfile`](deploy/Caddyfile) (gets and renews certificates itself)
+  and [`deploy/nginx.conf`](deploy/nginx.conf). Both redirect HTTP to HTTPS, send HSTS and the usual security
+  headers, serve `robots.txt` and `sitemap.xml` at the domain root, and show [`deploy/404.html`](deploy/404.html)
+  for unknown addresses. The app itself warns anyone who reaches it over plain HTTP from another machine.
+- **Tell it who you are.** Set `QA_ORG_NAME`, `QA_CONTACT_EMAIL` and `QA_APP_URL` in `.env` so the built-in
+  Privacy policy and Terms of use name your organisation. Replace the text entirely by adding
+  `local/legal/privacy.md` and `local/legal/terms.md`.
+- **Generate the sitemap once per domain:** `python3 deploy/make_sitemap.py https://qa.example.com`. It lists only
+  the sign-in page and the two legal documents; `robots.txt` disallows everything, because an internal tool has no
+  business in a search index.
 - The server must be able to reach the database host — staging databases are often VPN-only.
 - Mount `/data` so accounts, saved queries and check history survive restarts.
 - Sign-ups need admin approval, so the page can be open without everyone getting access.

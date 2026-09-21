@@ -19,3 +19,6 @@ __pycache__/
 .project_memory/
 .snapshot_key
 logs/
+
+# Generated per installation by deploy/make_sitemap.py
+static/sitemap.xml

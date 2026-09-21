@@ -24,7 +24,7 @@ import store  # noqa: E402
 import ui  # noqa: E402
 from views import (account, admin, ask_ai, charts, checks, consistency, dashboard, evidence_page,  # noqa: E402
                    explorer, investigate, login, lookup, playbooks, record, schema_compare, search, sql_editor,
-                   test_ideas, validate, health, env_compare, databases)
+                   test_ideas, validate, health, env_compare, databases, legal)
 
 auth.init()
 store.init()
@@ -53,7 +53,15 @@ if u:
         st.session_state.user = u
 
 if not u:
-    st.navigation([st.Page(login.render, title="Sign in", icon=":material/login:")], position="hidden").run()
+    public = {
+        "login": st.Page(login.render, title="Sign in", icon=":material/login:", default=True, url_path="sign-in"),
+        "privacy": st.Page(legal.privacy, title="Privacy policy", icon=":material/privacy_tip:", url_path="privacy"),
+        "terms": st.Page(legal.terms, title="Terms of use", icon=":material/gavel:", url_path="terms"),
+    }
+    ui.PAGES.update(public)
+    ui.insecure_warning()
+    ui.cookie_notice()
+    st.navigation(list(public.values()), position="hidden").run()
     st.stop()
 
 evidence_count = len(st.session_state.get("evidence", []))
@@ -81,6 +89,8 @@ pages = {
     "sql": st.Page(sql_editor.render, title="SQL editor", icon=":material/code:", url_path="sql"),
     "account": st.Page(account.render, title="My account", icon=":material/person:", url_path="account"),
     "databases": st.Page(databases.render, title="Databases", icon=":material/database:", url_path="databases"),
+    "privacy": st.Page(legal.privacy, title="Privacy policy", icon=":material/privacy_tip:", url_path="privacy"),
+    "terms": st.Page(legal.terms, title="Terms of use", icon=":material/gavel:", url_path="terms"),
 }
 if u["role"] == "admin":
     pages["admin"] = st.Page(admin.render, title="Admin", icon=":material/admin_panel_settings:", url_path="admin")
@@ -92,6 +102,7 @@ nav = {
     "Monitor": [pages["dashboard"], pages["checks"], pages["health"]],
     "Explore": [pages["search"], pages["find"], pages["lookup"], pages["ai"], pages["charts"], pages["sql"]],
     "Settings": [pages["account"], pages["databases"]] + ([pages["admin"]] if "admin" in pages else []),
+    "Legal": [pages["privacy"], pages["terms"]],
 }
 current = st.navigation(nav, expanded=True)
 
@@ -110,8 +121,15 @@ with st.sidebar:
         st.caption("No database connected.")
     st.divider()
     st.caption(f"Signed in as **{u['full_name']}** · {u['role']}")
+    legal_a, legal_b = st.columns(2)
+    if legal_a.button("Privacy", key="side_privacy", type="tertiary"):
+        ui.go("privacy")
+    if legal_b.button("Terms", key="side_terms", type="tertiary"):
+        ui.go("terms")
     if st.button("Sign out", width="stretch"):
         st.session_state.clear()
         st.rerun()
 
+ui.insecure_warning()
+ui.cookie_notice()
 current.run()

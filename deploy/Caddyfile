@@ -1,0 +1,55 @@
+# QA Data Desk behind Caddy: HTTPS, security headers, robots.txt, sitemap.xml and a custom 404.
+#
+#   1. Point your DNS at this server.
+#   2. Replace qa.example.com with your domain, and the paths with yours.
+#   3. python3 deploy/make_sitemap.py https://qa.example.com
+#   4. caddy run --config deploy/Caddyfile
+#
+# Caddy gets and renews the TLS certificate itself, and redirects HTTP to HTTPS automatically.
+
+qa.example.com {
+	encode zstd gzip
+
+	# --- security headers ------------------------------------------------
+	header {
+		# Force HTTPS for a year, including subdomains. Remove `preload` unless you submit the domain.
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+		# An internal tool has no business in a search index.
+		X-Robots-Tag "noindex, nofollow"
+		-Server
+	}
+
+	# --- files served at the domain root ---------------------------------
+	handle /robots.txt {
+		root * /srv/qa_dashboard/static
+		file_server
+	}
+	handle /sitemap.xml {
+		root * /srv/qa_dashboard/static
+		file_server
+	}
+
+	# --- the app ----------------------------------------------------------
+	handle {
+		reverse_proxy 127.0.0.1:8501 {
+			# Streamlit needs websockets; Caddy upgrades them automatically.
+			header_up X-Forwarded-Proto {scheme}
+			header_up X-Real-IP {remote_host}
+		}
+	}
+
+	# --- custom 404 for anything the proxy itself rejects -----------------
+	handle_errors {
+		@notfound expression {err.status_code} == 404
+		handle @notfound {
+			root * /srv/qa_dashboard/deploy
+			rewrite * /404.html
+			file_server
+		}
+		respond "{err.status_code} {err.status_text}"
+	}
+}

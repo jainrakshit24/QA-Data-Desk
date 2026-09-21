@@ -8,6 +8,7 @@ Every page, what it is for, and how to drive it. Pages are grouped in the sideba
 - [Monitor](#monitor) — QA dashboard · QA checks · Database health
 - [Explore](#explore) — Search everything · Find data · Find by ID · Ask AI · Charts · SQL editor
 - [Settings](#settings) — My account · Databases · Admin
+- [Legal](#legal) — Privacy policy · Terms of use
 - [Things that apply everywhere](#things-that-apply-everywhere)
 
 ---
@@ -251,6 +252,18 @@ Connect your own database and switch between them.
   non-admins). They apply immediately, everywhere, including logs.
 - **Activity** — who ran what, when, against which database, how long it took, and whether it failed. SQL is stored
   masked.
+
+---
+
+## Legal
+
+**Privacy policy** and **Terms of use** are pages in the app, readable before you sign in and linked from the
+sign-in screen and the sidebar. The shipped text describes what this software actually does: what it stores about
+you, what it refuses to store, the three strictly necessary cookies, and what the AI helper may and may not send.
+
+An installation makes them its own in two steps: set `QA_ORG_NAME` and `QA_CONTACT_EMAIL` in `.env` so the
+documents name the right organisation, or replace the text completely with `local/legal/privacy.md` and
+`local/legal/terms.md`. A cookie notice appears once per person and is remembered.
 
 ---
 
