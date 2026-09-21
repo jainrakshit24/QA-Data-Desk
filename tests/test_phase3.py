@@ -848,3 +848,26 @@ def test_legal_pages_offer_a_way_back(app_db, tmp_path):
     assert sum("Back" in label for label in labels) == 2          # one at the top, one at the end
     assert any("terms of use" in label.lower() for label in labels)
     assert any("Privacy policy" in m.value for m in at.markdown)
+
+
+def test_a_new_page_starts_at_the_top(app_db, tmp_path, monkeypatch):
+    """Switching pages must reset the scroll position — Streamlit keeps it otherwise."""
+    import ui
+    calls = []
+    monkeypatch.setattr(ui, "scroll_to_top", lambda: calls.append(1))
+    state = {}
+    monkeypatch.setattr(ui.st, "session_state", state, raising=False)
+
+    class Page:
+        def __init__(self, url_path):
+            self.url_path = url_path
+    pages = {"investigate": Page("investigate"), "checks": Page("checks"), "privacy": Page("privacy")}
+
+    ui.remember_current_page(pages, pages["investigate"])
+    assert calls == [1] and state["_last_page"] == "investigate"
+    ui.remember_current_page(pages, pages["investigate"])          # a rerun of the same page must not jump
+    assert calls == [1]
+    ui.remember_current_page(pages, pages["checks"])
+    assert calls == [1, 1] and state["_last_page"] == "checks"
+    ui.remember_current_page(pages, pages["privacy"])              # legal pages do not become the "back" target
+    assert calls == [1, 1, 1] and state["_last_page"] == "checks"

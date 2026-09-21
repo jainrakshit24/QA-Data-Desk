@@ -11,6 +11,7 @@ import pandas as pd
 import plotly.express as px
 import pymysql
 import streamlit as st
+import streamlit.components.v1 as components
 from pymysql.converters import escape_item
 
 import auth
@@ -54,10 +55,32 @@ def require_connection():
 
 
 def remember_current_page(pages, current):
-    """Note which page is open, so pages like the legal documents can offer a way back to it."""
+    """Note which page is open, so pages like the legal documents can offer a way back to it.
+
+    Also scrolls a newly opened page back to the top: Streamlit keeps the browser's scroll position when the
+    page changes, so arriving from halfway down a long page would otherwise drop you halfway down the next one.
+    """
     key = next((k for k, page in pages.items() if page.url_path == current.url_path), None)
+    if key and key != st.session_state.get("_open_page"):
+        st.session_state["_open_page"] = key
+        scroll_to_top()
     if key and key not in LEGAL_PAGES:
         st.session_state["_last_page"] = key
+
+
+def scroll_to_top():
+    """Put the view back at the top. Streamlit has no API for this, so it is done in the browser."""
+    components.html(
+        """<script>
+        const doc = window.parent && window.parent.document;
+        if (doc) {
+            const main = doc.querySelector('[data-testid="stMain"]')
+                || doc.querySelector('section.main')
+                || doc.querySelector('[data-testid="stAppViewContainer"]');
+            if (main) main.scrollTo({top: 0, behavior: 'instant'});
+            window.parent.scrollTo({top: 0, behavior: 'instant'});
+        }
+        </script>""", height=0)
 
 
 def back_button(label="Back", fallback="investigate", key="back"):
