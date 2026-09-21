@@ -59,9 +59,11 @@ if not u:
         "terms": st.Page(legal.terms, title="Terms of use", icon=":material/gavel:", url_path="terms"),
     }
     ui.PAGES.update(public)
+    signed_out = st.navigation(list(public.values()), position="hidden")
+    ui.remember_current_page(public, signed_out)
     ui.insecure_warning()
     ui.cookie_notice()
-    st.navigation(list(public.values()), position="hidden").run()
+    signed_out.run()
     st.stop()
 
 evidence_count = len(st.session_state.get("evidence", []))
@@ -105,6 +107,7 @@ nav = {
     "Legal": [pages["privacy"], pages["terms"]],
 }
 current = st.navigation(nav, expanded=True)
+ui.remember_current_page(pages, current)
 
 with st.sidebar:
     quick = st.text_input("Search everything", key="global_q", placeholder="table, column, query, check…",

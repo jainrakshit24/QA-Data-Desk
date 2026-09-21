@@ -19,6 +19,7 @@ import privacy
 import schema
 
 PAGES = {}  # filled by app.py: page key -> st.Page
+LEGAL_PAGES = ("privacy", "terms")
 DISPLAY_ROWS = 1000        # rows drawn in the browser; downloads include everything fetched
 SCHEMA_ERRORS = {1054, 1146}  # unknown column / table: the cached table list is out of date
 
@@ -50,6 +51,22 @@ def require_connection():
     if is_admin() and st.button("Connect a database", type="primary", key=f"req_conn_{st.session_state.get('_page_key', '')}"):
         go("databases")
     return False
+
+
+def remember_current_page(pages, current):
+    """Note which page is open, so pages like the legal documents can offer a way back to it."""
+    key = next((k for k, page in pages.items() if page.url_path == current.url_path), None)
+    if key and key not in LEGAL_PAGES:
+        st.session_state["_last_page"] = key
+
+
+def back_button(label="Back", fallback="investigate", key="back"):
+    """A way back to whatever the reader was doing before. Falls back to the home page."""
+    target = st.session_state.get("_last_page") or fallback
+    if target not in PAGES:
+        target = fallback if fallback in PAGES else next(iter(PAGES), None)
+    if target and st.button(f"← {label}", key=key):
+        go(target)
 
 
 def go(page_key):
@@ -430,7 +447,7 @@ def insecure_warning():
     box.warning("**This page was served over plain HTTP.** Passwords and query results are crossing the network "
                 "unencrypted. Put the app behind HTTPS before using it from another machine — see "
                 "`deploy/` in the project for a ready Caddy or nginx configuration.")
-    if box.button("I understand, hide this", key="hide_insecure"):
+    if box.button("I understand, hide this", key="hide_insecure", type="tertiary"):
         st.session_state["_hid_insecure"] = True
         st.rerun()
 
@@ -446,14 +463,15 @@ def cookie_notice():
     elif st.session_state.get("_cookie_ack"):
         return
     box = st.container(border=True)
-    box.markdown("🍪 **Cookies** — " + legal.cookie_notice())
-    a, b, _ = box.columns([1.1, 1.4, 4])
-    if a.button("Got it", type="primary", key="cookie_ack"):
+    text, ack, more = box.columns([6, 1.1, 1.8], vertical_alignment="center")
+    text.caption("🍪 " + legal.cookie_notice())
+    a, b = ack, more
+    if a.button("Got it", type="primary", key="cookie_ack", width="stretch"):
         st.session_state["_cookie_ack"] = True
         if who:
             import datetime as _dt
             import store
             store.set_setting(f"cookies.ack.{who}", _dt.datetime.utcnow().isoformat(timespec="seconds"))
         st.rerun()
-    if b.button("Read the privacy policy", key="cookie_privacy"):
+    if b.button("Privacy policy", key="cookie_privacy", width="stretch"):
         go("privacy")

@@ -9,18 +9,27 @@ from core import legal
 
 
 def _page(name):
-    st.markdown(legal.document(name))
-    if not legal.is_customised(name):
-        st.caption("This is the text that ships with the software. An administrator can replace it with your "
-                   "organisation's own wording by adding `local/legal/" + name + ".md`, and set QA_ORG_NAME and "
-                   "QA_CONTACT_EMAIL in `.env` so it names the right people.")
-    st.divider()
-    a, b, _ = st.columns([1.2, 1.2, 4])
-    a.download_button("Download", legal.document(name).encode("utf-8"), file_name=f"{name}.md",
-                      mime="text/markdown", on_click="ignore", key=f"legal_dl_{name}")
-    if b.button("The other document", key=f"legal_other_{name}"):
-        import ui
-        ui.go("terms" if name == "privacy" else "privacy")
+    import ui
+    fallback = "login" if not st.session_state.get("user") else "investigate"
+    top, _ = st.columns([1, 4])
+    with top:
+        ui.back_button(fallback=fallback, key=f"legal_back_{name}")
+    left, mid, right = st.columns([1, 5, 1])          # a reading column, not the full width
+    with mid:
+        st.markdown(legal.document(name))
+        if not legal.is_customised(name):
+            st.caption("This is the text that ships with the software. An administrator can replace it with your "
+                       "organisation's own wording by adding `local/legal/" + name + ".md`, and set QA_ORG_NAME "
+                       "and QA_CONTACT_EMAIL in `.env` so it names the right people.")
+        st.divider()
+        a, b, c, _ = st.columns([1.1, 1.3, 1.8, 2])
+        with a:
+            ui.back_button(fallback=fallback, key=f"legal_back_bottom_{name}")
+        b.download_button("Download", legal.document(name).encode("utf-8"), file_name=f"{name}.md",
+                          mime="text/markdown", on_click="ignore", key=f"legal_dl_{name}")
+        other = "terms" if name == "privacy" else "privacy"
+        if c.button(f"Read the {legal.DOCUMENTS[other].lower()} →", key=f"legal_other_{name}"):
+            ui.go(other)
 
 
 def privacy():

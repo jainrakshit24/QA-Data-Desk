@@ -46,7 +46,7 @@ any time, for example to protect a database.
 
 ## 8. Liability
 
-To the extent the law allows, {org} is not liable for loss arising from use of the tool. The underlying software is
+To the extent the law allows, {org} is not liable for any loss arising from use of the tool. The underlying software is
 provided under the MIT License, without warranty; see the LICENSE file that ships with it.
 
 ## 9. Ending access

@@ -29,6 +29,30 @@ def render():
         _plan(s)
     else:
         _identifier(s)
+    _shortcuts()
+
+
+SHORTCUTS = [
+    ("find", "Browse a table", "Filter, count and group without SQL"),
+    ("tests", "Test ideas", "Edge cases and test data for a table"),
+    ("checks", "QA checks", "Run the saved checks for this database"),
+    ("validate", "Validate API", "Compare a response with the database"),
+    ("sql", "SQL editor", "Write it yourself, with parameters"),
+    ("evidence", "Bug evidence", "Turn findings into a report"),
+]
+
+
+def _shortcuts():
+    """The first screen should answer “where do I go?” for someone who did not come with an identifier."""
+    st.divider()
+    st.caption("Or go straight to")
+    cols = st.columns(3)
+    for i, (key, label, why) in enumerate(SHORTCUTS):
+        if key not in ui.PAGES:
+            continue
+        with cols[i % 3]:
+            if st.button(f"**{label}**  \n{why}", key=f"inv_short_{key}", width="stretch"):
+                ui.go(key)
 
 
 # ------------------------------------------------------------------ identifier search

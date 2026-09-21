@@ -823,3 +823,28 @@ def test_custom_404_page_is_self_contained():
     assert "noindex" in html and "404" in html
     assert 'href="/"' in html                                  # one clear way back
     assert "http://" not in html and "<script" not in html     # no external asset, no script
+
+
+def test_legal_pages_offer_a_way_back(app_db, tmp_path):
+    """A reader who lands on the policy — signed in or not — must be able to get back in one click."""
+    from streamlit.testing.v1 import AppTest
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    script = tmp_path / "legal_page.py"
+    script.write_text(
+        "import sys\n"
+        f"sys.path.insert(0, {root!r})\n"
+        "import streamlit as st\n"
+        "import auth, store, ui\n"
+        f"auth.APP_DB = {str(tmp_path / 'app.sqlite3')!r}\n"
+        "auth.init(); store.init()\n"
+        "from views import legal as legal_view, login\n"
+        "ui.PAGES.update({'login': st.Page(login.render, title='Sign in', url_path='sign-in'),\n"
+        "                 'privacy': st.Page(legal_view.privacy, title='Privacy policy', url_path='privacy')})\n"
+        "legal_view.privacy()\n")
+    at = AppTest.from_file(str(script), default_timeout=30)
+    at.run()
+    assert not at.exception
+    labels = [b.label for b in at.button]
+    assert sum("Back" in label for label in labels) == 2          # one at the top, one at the end
+    assert any("terms of use" in label.lower() for label in labels)
+    assert any("Privacy policy" in m.value for m in at.markdown)

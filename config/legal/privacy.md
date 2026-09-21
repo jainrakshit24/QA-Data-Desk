@@ -2,14 +2,13 @@
 
 _Last updated: {updated}_
 
-{org} runs **{app}**, an internal, read-only tool for inspecting databases that {org} already controls.
-This policy explains what the tool stores about **you as a user of the tool**. It is not a policy about the
-data inside the databases you connect — that data stays in those databases and is governed by {org}'s own
-policies.
+**{app}** is an internal, read-only tool for inspecting databases that {org} already controls. This policy
+explains what the tool stores about **you as a user of the tool**. It is not a policy about the data inside the
+databases you connect — that data stays where it is and is governed by {org}'s own policies.
 
 ## Who is responsible
 
-{org} operates this installation. Questions, access requests or deletion requests: **{contact}**.
+This installation is operated by {org}. Questions, access requests or deletion requests: **{contact}**.
 
 ## What we store about you
 

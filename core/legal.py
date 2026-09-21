@@ -26,7 +26,7 @@ COOKIES = [
 def settings():
     """Who operates this installation. Set these in .env so the documents name the right organisation."""
     return {
-        "org": os.environ.get("QA_ORG_NAME", "").strip() or "The team running this installation",
+        "org": os.environ.get("QA_ORG_NAME", "").strip() or "your organisation",
         "app": os.environ.get("QA_APP_NAME", "").strip() or "QA Data Desk",
         "contact": os.environ.get("QA_CONTACT_EMAIL", "").strip() or "your administrator",
         "url": os.environ.get("QA_APP_URL", "").strip(),
