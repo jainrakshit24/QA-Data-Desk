@@ -24,7 +24,7 @@ cp .env.example .env          # optional — you can add databases in the app in
 
 ## Before opening a pull request
 ```bash
-python3 -m pytest -q          # 320+ tests, random order; database tests skip without a connection
+python3 -m pytest -q          # 350+ tests, random order; database tests skip without a connection
 ```
 - Add a test with the change. Prefer a test that fails without your fix.
 - Keep the UI wording plain: the audience is QA engineers, not DBAs. No jargon in messages a user can hit.

@@ -34,6 +34,7 @@ Bug or identifier ─► Start investigation ─► Investigate record ─► Va
 | **SQL editor** | SQL with `:named` parameters bound safely, a table helper, a team query library (tags, categories, run counts, “Explain simply”) and history you can filter by database and status. **Analyze** runs `EXPLAIN` (never the query) and explains full table scans, indexes used, rows read, filesort / temporary tables, and patterns such as `DATE(column) = …` or a leading `%` wildcard, with suggestions. |
 | **Databases** | Connect your own database (form or `mysql://…` URL), test it before saving, edit or remove it, switch the database everyone's pages use, refresh its table list. Read-only always. |
 | **Admin** | Approve accounts, AI key, extra secret / personal column names, activity log. |
+| **Privacy policy · Terms of use** | Readable before signing in and linked from the sign-in page and the sidebar. The shipped text describes what this software actually does — set `QA_ORG_NAME` and `QA_CONTACT_EMAIL` in `.env` to name your organisation, or replace it entirely with `local/legal/privacy.md`. |
 
 ## Quick start
 
@@ -88,6 +89,10 @@ checked and every session is opened `READ ONLY` — but a read-only user is the 
   (with emails and phone numbers masked) and SQL text. It never receives database rows, API response values or
   identifier values, and it never runs anything — every AI-written query waits for you to press Run.
 - **Evidence is always masked.** Reports mask emails and phone numbers and hide secret fields for every role.
+- **No tracking.** Only three strictly necessary cookies (session, XSRF, and a note that you saw the cookie
+  message). No analytics, no advertising; Streamlit's own usage statistics are off.
+- **Secrets never reach the browser.** Database passwords are write-only in the form, the AI key shows as On/Off,
+  and the first-run setup code is printed to the terminal — with a test that asserts none of them is rendered.
 - **Named parameters.** `:user_id` in SQL is bound by the driver, never pasted into the query text.
 
 ## Your own checks, charts, links and AI notes
@@ -203,14 +208,25 @@ docker run -p 8501:8501 -v qa-data:/data \
   -e QA_SETUP_CODE=choose-a-long-code qa-data-desk
 ```
 
-- Put it behind HTTPS (a reverse proxy such as Caddy or nginx). Streamlit alone serves plain HTTP.
+- **Put it behind HTTPS.** Streamlit only speaks plain HTTP, so a reverse proxy terminates TLS. `deploy/Caddyfile`
+  and `deploy/nginx.conf` ship ready to use: HTTP redirected to HTTPS, HSTS, `X-Content-Type-Options`,
+  `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy` and `X-Robots-Tag: noindex`, `robots.txt` and
+  `sitemap.xml` served at the domain root, and `deploy/404.html` for unknown addresses. The app itself warns
+  anyone who reaches it over plain HTTP from another machine.
+- **Say who runs it:** `QA_ORG_NAME`, `QA_CONTACT_EMAIL`, `QA_APP_URL` in `.env` — they fill in the privacy policy
+  and terms, and `python3 deploy/make_sitemap.py https://your-domain` writes the sitemap.
 - The server must be able to reach the database host — staging databases are often IP-restricted or VPN-only.
 - Mount `/data` so accounts and saved queries survive restarts.
+- Sign-ups need admin approval, so the page can be reachable without everyone getting in.
 
 ### Publishing the code
 
-`.gitignore` keeps `.db.json`, `.ai.json`, `local/`, `cache/`, the SQLite file and the setup code out of
-git. Before the first push, check with `git status --ignored` that none of them is staged.
+`.gitignore` keeps `.env`, `.db.json`, `.ai.json`, `local/`, `cache/`, `logs/`, the SQLite file, the setup code
+and the snapshot key out of git. Before the first push, check that none of them is tracked:
+
+```bash
+git ls-files | grep -E "\.env$|\.db\.json$|\.ai\.json$|^local/|^cache/|sqlite3"   # should print nothing
+```
 
 ## Project layout
 
@@ -239,8 +255,11 @@ core/               investigation logic without any UI — tested directly
   env_compare.py      record / query / row-count differences between two connections
   sql_explain.py      plain-English summary of a SELECT, without AI
   errors.py           MySQL errors turned into QA-friendly messages
-store.py            check-run counts, rules, playbooks, schema snapshots (SQLite)
+  legal.py            privacy policy / terms text with the operator's details filled in
+store.py            check-run counts, rules, playbooks, snapshots, settings (SQLite)
+envfile.py          reads .env into the environment (real env vars always win)
 qa_checks.py        loading and running checks for the Checks and Dashboard pages
+scheduler.py        headless check runner for cron (no Streamlit)
 views/              one file per page
 db.py               connections and the read-only guard
 privacy.py          secret-column blocking and masking
@@ -249,8 +268,11 @@ schema.py           table/column cache, search, link detection
 ai.py               Gemini calls (names only, never data)
 packs.py            loads config/ and local/
 ui.py               shared result table, charts, errors
-config/             generic checks, charts, links, AI notes, report templates (published)
+config/             generic checks, charts, links, AI notes, report templates, privacy policy and terms (published)
+deploy/             Caddy and nginx configs, custom 404, sitemap generator
+static/             robots.txt (and the sitemap your domain generates)
 local/              your own — not published
+docs/               user guide, configuration, scheduler, architecture, security, development
 tests/              pytest suite
 ```
 
