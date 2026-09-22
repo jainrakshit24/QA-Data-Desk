@@ -284,6 +284,14 @@ def _close(conn):
         pass
 
 
+def clear_backoff():
+    """Forget that a server was unreachable, so the next attempt goes out straight away.
+
+    Used by the "Try again" button: when someone asks for a retry they should not be told to wait.
+    """
+    _unreachable_until.clear()
+
+
 def close_pool():
     with _pool_lock:
         for idle in _pool.values():

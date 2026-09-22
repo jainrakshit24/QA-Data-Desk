@@ -23,6 +23,21 @@ PAGES = {}  # filled by app.py: page key -> st.Page
 LEGAL_PAGES = ("privacy", "terms")
 DISPLAY_ROWS = 1000        # rows drawn in the browser; downloads include everything fetched
 SCHEMA_ERRORS = {1054, 1146}  # unknown column / table: the cached table list is out of date
+# Problems with the connection itself, not with a query. Each one gets its own plain-English advice.
+CONNECTION_ADVICE = {
+    2003: ("The database server cannot be reached.",
+           "It may be down, or this machine may have lost its network or VPN connection. "
+           "Nothing is wrong with your query."),
+    2002: ("The database server cannot be reached.",
+           "The socket or host it is configured with did not answer."),
+    2005: ("The database server's name could not be looked up.",
+           "Check the host name on the Databases page, and that this machine has working DNS "
+           "(a VPN dropping out looks exactly like this)."),
+    1045: ("The database refused the user name or password.",
+           "The credentials may have been rotated. An admin can update them on the Databases page."),
+    1049: ("That database does not exist on the server.",
+           "Check the database name on the Databases page."),
+}
 
 
 # ------------------------------------------------------------------ session
@@ -130,10 +145,37 @@ SCHEMA_CHECK_SECONDS = 600
 _schema_checked = {}  # connection name -> last time the structure fingerprint was compared
 
 
+def connection_problem(exc):
+    """Explain a connection-level failure and offer a retry, instead of dropping a traceback on the page.
+
+    Returns True when it handled the error; the caller should then stop rendering.
+    """
+    code = exc.args[0] if getattr(exc, "args", None) else 0
+    if code not in CONNECTION_ADVICE:
+        return False
+    headline, advice = CONNECTION_ADVICE[code]
+    st.error(f"**{headline}**\n\n{advice}")
+    st.caption(f"Connection “{active_connection()}” · MySQL error {code}")
+    left, right = st.columns([1, 4])
+    if left.button("Try again", type="primary", key=f"conn_retry_{st.session_state.get('_open_page', '')}"):
+        db.clear_backoff()
+        st.rerun()
+    if is_admin() and right.button("Databases", key=f"conn_dbs_{st.session_state.get('_open_page', '')}"):
+        go("databases")
+    return True
+
+
 def get_schema():
     """Cached table list, compared with the live database every 10 minutes and refreshed if it changed."""
     name = active_connection()
-    s = _schema(name, st.session_state.get("schema_version", 0))
+    try:
+        s = _schema(name, st.session_state.get("schema_version", 0))
+    except pymysql.MySQLError as e:
+        # The structure is needed by every page, so a server that is down would otherwise show a traceback.
+        _schema.clear()          # don't let the failure be remembered once the server comes back
+        if not connection_problem(e):
+            raise
+        st.stop()
     now = time.time()
     if now - _schema_checked.get(name, 0) > SCHEMA_CHECK_SECONDS:
         _schema_checked[name] = now

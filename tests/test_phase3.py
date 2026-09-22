@@ -8,6 +8,7 @@ import json
 import os
 import sqlite3
 import sys
+import time
 
 import pandas as pd
 import pytest
@@ -15,6 +16,7 @@ import pytest
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import auth  # noqa: E402
+import db  # noqa: E402
 import privacy  # noqa: E402
 import store  # noqa: E402
 
@@ -871,3 +873,64 @@ def test_a_new_page_starts_at_the_top(app_db, tmp_path, monkeypatch):
     assert calls == [1, 1] and state["_last_page"] == "checks"
     ui.remember_current_page(pages, pages["privacy"])              # legal pages do not become the "back" target
     assert calls == [1, 1, 1] and state["_last_page"] == "checks"
+
+
+# ------------------------------------------------------------------ an unreachable database explains itself
+def _unreachable_page(tmp_path, code=2003):
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    path = tmp_path / f"unreachable_{code}.py"
+    path.write_text(
+        "import sys\n"
+        f"sys.path.insert(0, {root!r})\n"
+        "import pymysql, auth, store, ui\n"
+        f"auth.APP_DB = {str(tmp_path / 'app.sqlite3')!r}\n"
+        "auth.init(); store.init()\n"
+        "ui.active_connection = lambda: 'Staging'\n"
+        "class Dead:\n"
+        "    cleared = False\n"
+        "    def __call__(self, *a, **k):\n"
+        f"        raise pymysql.err.OperationalError({code}, 'Can\\'t connect to MySQL server')\n"
+        "    def clear(self):\n"
+        "        Dead.cleared = True\n"
+        "ui._schema = Dead()\n"
+        "ui.get_schema()\n"
+        "import streamlit as st\n"
+        "st.write('THIS SHOULD NOT RENDER')\n")
+    return str(path)
+
+
+def test_unreachable_database_explains_itself_instead_of_a_traceback(app_db, tmp_path, offline_ui):
+    from streamlit.testing.v1 import AppTest
+    owner = app_db["owner"]
+    at = AppTest.from_file(_unreachable_page(tmp_path), default_timeout=30)
+    at.session_state["user"] = {k: owner[k] for k in ("id", "username", "full_name", "email", "role", "status")}
+    at.run()
+    assert not at.exception, "an unreachable server must not reach the user as a traceback"
+    assert "cannot be reached" in at.error[0].value
+    assert "2003" in " ".join(c.value for c in at.caption)
+    assert not any("THIS SHOULD NOT RENDER" in str(m.value) for m in at.markdown), "the page must stop"
+    assert any(b.label == "Try again" for b in at.button)
+
+
+def test_unreachable_page_offers_a_retry_that_clears_the_backoff(app_db, tmp_path, offline_ui):
+    from streamlit.testing.v1 import AppTest
+    owner = app_db["owner"]
+    db._unreachable_until[("db.example.com", 3306)] = time.time() + 999
+    at = AppTest.from_file(_unreachable_page(tmp_path), default_timeout=30)
+    at.session_state["user"] = {k: owner[k] for k in ("id", "username", "full_name", "email", "role", "status")}
+    at.run()
+    next(b for b in at.button if b.label == "Try again").click().run()
+    assert db._unreachable_until == {}, "asking to retry must not then be told to wait"
+
+
+def test_every_connection_level_error_has_its_own_advice():
+    import ui
+    for code, (headline, advice) in ui.CONNECTION_ADVICE.items():
+        assert headline.endswith(".") and len(advice) > 30, code
+    assert db.UNREACHABLE_CODES <= set(ui.CONNECTION_ADVICE)
+
+
+def test_a_query_error_is_not_mistaken_for_an_unreachable_server():
+    import pymysql
+    import ui
+    assert ui.connection_problem(pymysql.err.ProgrammingError(1064, "syntax error")) is False
